@@ -152,13 +152,21 @@
     .modal button:hover {
       background: #a71d5d;
     }
+
+    .main-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
   </style>
 </head>
 <body>
-  <div class="card-stack-wrapper">
-  <div class="card-stack" id="cardStack"></div>
-</div>
-
+  <div class="main-wrapper">
+    <!--<h1>Happy Birthday Akmal! 🎂</h1>-->
+    <div class="card-stack" id="cardStack"></div>
+  </div>
   <canvas id="confettiCanvas"></canvas>
   <audio id="birthdayMusic" src="sounds/birthday_song.mp3" autoplay loop></audio>
 
