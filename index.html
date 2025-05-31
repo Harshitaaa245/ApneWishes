@@ -113,42 +113,37 @@
   ];
 
   const stack = document.getElementById('cardStack');
-  let currentIndex = 0;
   let isFlipped = false;
   let flipping = false;
 
   function createCard(data, index) {
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.dataset.index = index;
-  card.style.zIndex = cardData.length - index;
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.index = index;
+    card.style.zIndex = 1000 - index; // Ensure proper stacking order
 
-  const front = document.createElement('div');
-  front.className = 'card-face card-front';
-  const img = document.createElement('img');
-  img.src = data.image;
-  front.appendChild(img);
+    const front = document.createElement('div');
+    front.className = 'card-face card-front';
+    const img = document.createElement('img');
+    img.src = data.image;
+    front.appendChild(img);
 
-  const back = document.createElement('div');
-  back.className = 'card-face card-back';
-  back.innerText = data.message;
+    const back = document.createElement('div');
+    back.className = 'card-face card-back';
+    back.innerText = data.message;
 
-  card.appendChild(front);
-  card.appendChild(back);
-  stack.appendChild(card);
-
-  // Attach click handler directly to card
-  card.addEventListener('click', () => {
-    if (card !== getTopCard()) return; // only top card reacts
-    handleCardClick(card);
-  });
-}
-
+    card.appendChild(front);
+    card.appendChild(back);
+    stack.appendChild(card);
+  }
 
   cardData.forEach((data, i) => createCard(data, i));
 
   function getTopCard() {
-    return stack.children[stack.children.length - 1];
+    const cards = Array.from(document.querySelectorAll('.card'));
+    return cards.reduce((top, card) =>
+      parseInt(card.style.zIndex) > parseInt(top.style.zIndex) ? card : top
+    );
   }
 
   function flipCard(card) {
@@ -162,37 +157,51 @@
     isFlipped = false;
   }
 
-  async function handleCardClick(card) {
-  if (flipping) return;
+  function resetZIndexes() {
+    const cards = Array.from(document.querySelectorAll('.card'));
+    cards.forEach((card, index) => {
+      card.style.zIndex = 1000 - index;
+    });
+  }
 
-  if (!isFlipped) {
-    flipping = true;
-    flipCard(card);
-    flipping = false;
-  } else {
-    const response = await askUser();
-    if (response === 'next') {
+  async function handleCardClick(card) {
+    if (flipping) return;
+
+    if (!isFlipped) {
       flipping = true;
-      unflipCard(card);
-      stack.insertBefore(card, stack.firstElementChild); // send to bottom
+      flipCard(card);
       flipping = false;
-      isFlipped = false;
-    } else if (response === 'flipBack') {
-      flipping = true;
-      unflipCard(card);
-      flipping = false;
-      isFlipped = false;
+    } else {
+      const response = await askUser();
+      if (response === 'next') {
+        flipping = true;
+        unflipCard(card);
+        stack.insertBefore(card, stack.firstChild); // move to bottom
+        resetZIndexes();
+        flipping = false;
+        isFlipped = false;
+      } else if (response === 'flipBack') {
+        flipping = true;
+        unflipCard(card);
+        flipping = false;
+        isFlipped = false;
+      }
     }
   }
-}
-
 
   function askUser() {
     return new Promise((resolve) => {
-      const choice = confirm("Would you like to go to the next card?\nPress OK for Next, Cancel to flip back.");
-      resolve(choice ? 'next' : 'flipBack');
+      const result = confirm("Would you like to go to the next card?\nPress OK for Next, Cancel to flip back.");
+      resolve(result ? 'next' : 'flipBack');
     });
   }
+
+  // Attach a single global listener, delegate manually
+  stack.addEventListener('click', (e) => {
+    const card = getTopCard();
+    if (!card.contains(e.target)) return; // Only react if click was on the top card
+    handleCardClick(card);
+  });
 
   // Confetti Setup
   const confettiCanvas = document.getElementById('confettiCanvas');
@@ -252,6 +261,7 @@
   const music = document.getElementById('birthdayMusic');
   music.volume = 0.4;
 </script>
+
 </body>
 </html>
 
