@@ -118,25 +118,32 @@
   let flipping = false;
 
   function createCard(data, index) {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.dataset.index = index;
-    card.style.zIndex = cardData.length - index;
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.dataset.index = index;
+  card.style.zIndex = cardData.length - index;
 
-    const front = document.createElement('div');
-    front.className = 'card-face card-front';
-    const img = document.createElement('img');
-    img.src = data.image;
-    front.appendChild(img);
+  const front = document.createElement('div');
+  front.className = 'card-face card-front';
+  const img = document.createElement('img');
+  img.src = data.image;
+  front.appendChild(img);
 
-    const back = document.createElement('div');
-    back.className = 'card-face card-back';
-    back.innerText = data.message;
+  const back = document.createElement('div');
+  back.className = 'card-face card-back';
+  back.innerText = data.message;
 
-    card.appendChild(front);
-    card.appendChild(back);
-    stack.appendChild(card);
-  }
+  card.appendChild(front);
+  card.appendChild(back);
+  stack.appendChild(card);
+
+  // Attach click handler directly to card
+  card.addEventListener('click', () => {
+    if (card !== getTopCard()) return; // only top card reacts
+    handleCardClick(card);
+  });
+}
+
 
   cardData.forEach((data, i) => createCard(data, i));
 
@@ -155,31 +162,30 @@
     isFlipped = false;
   }
 
-  async function handleCardClick() {
-    if (flipping) return;
-    const card = getTopCard();
-    if (!card) return;
+  async function handleCardClick(card) {
+  if (flipping) return;
 
-    if (!isFlipped) {
+  if (!isFlipped) {
+    flipping = true;
+    flipCard(card);
+    flipping = false;
+  } else {
+    const response = await askUser();
+    if (response === 'next') {
       flipping = true;
-      flipCard(card);
+      unflipCard(card);
+      stack.insertBefore(card, stack.firstElementChild); // send to bottom
       flipping = false;
-    } else {
-      const response = await askUser();
-      if (response === 'next') {
-        flipping = true;
-        unflipCard(card);
-        stack.insertBefore(card, stack.firstElementChild); // move to bottom
-        flipping = false;
-        isFlipped = false;
-      } else if (response === 'flipBack') {
-        flipping = true;
-        unflipCard(card);
-        flipping = false;
-        isFlipped = false;
-      }
+      isFlipped = false;
+    } else if (response === 'flipBack') {
+      flipping = true;
+      unflipCard(card);
+      flipping = false;
+      isFlipped = false;
     }
   }
+}
+
 
   function askUser() {
     return new Promise((resolve) => {
@@ -187,12 +193,6 @@
       resolve(choice ? 'next' : 'flipBack');
     });
   }
-
-  stack.addEventListener('click', (e) => {
-    const card = getTopCard();
-    if (e.target.closest('.card') !== card) return; // only top card can be clicked
-    handleCardClick();
-  });
 
   // Confetti Setup
   const confettiCanvas = document.getElementById('confettiCanvas');
