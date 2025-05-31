@@ -75,18 +75,16 @@
     .card-back {
       background: #ffe0f0;
       transform: rotateY(180deg);
-      display: flex;
-      justify-content: center;
-      align-items: center;
       padding: 20px;
       font-size: 1rem;
       line-height: 1.4;
       text-align: center;
       white-space: pre-wrap;
-      overflow-y: auto;        /* 👈 Enables vertical scroll */
-      scrollbar-width: thin;   /* Firefox */
-      max-height: 100%;        /* 👈 Ensures content doesn't overflow outside card */
-    }
+      overflow-y: auto;
+      max-height: 100%;
+      display: block; /* 👈 Switch from flex to block */
+}
+
     
     .card-back::-webkit-scrollbar {
   width: 6px;
