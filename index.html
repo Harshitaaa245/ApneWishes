@@ -79,11 +79,22 @@
       justify-content: center;
       align-items: center;
       padding: 20px;
-      font-size: 0.8rem;
+      font-size: 1rem;
       line-height: 1.4;
       text-align: center;
       white-space: pre-wrap;
+      overflow-y: auto;        /* 👈 Enables vertical scroll */
+      scrollbar-width: thin;   /* Firefox */
+      max-height: 100%;        /* 👈 Ensures content doesn't overflow outside card */
     }
+    
+    .card-back::-webkit-scrollbar {
+  width: 6px;
+}
+.card-back::-webkit-scrollbar-thumb {
+  background-color: #d63384;
+  border-radius: 3px;
+}
 
     canvas {
       position: fixed;
