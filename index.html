@@ -136,7 +136,23 @@
 
     cardData.forEach((data, i) => createCard(data, i));
 
-    const cards = Array.from(document.querySelectorAll('.card'));
+    let flipping = false;
+
+    stack.addEventListener('click', () => {
+      if (flipping) return;
+
+      const topCard = stack.lastElementChild;
+      if (!topCard.classList.contains('flipped')) {
+        flipping = true;
+        topCard.classList.add('flipped');
+        launchConfetti();
+        setTimeout(() => {
+          topCard.classList.remove('flipped');
+          stack.insertBefore(topCard, stack.firstElementChild);
+          flipping = false;
+        }, 1000);
+      }
+    });
 
     // Confetti setup
     const confettiCanvas = document.getElementById('confettiCanvas');
@@ -192,24 +208,10 @@
       drawConfetti();
     }
 
-    // Click handling
-    stack.addEventListener('click', () => {
-      const topCard = cards.find(c => !c.classList.contains('flipped'));
-      if (topCard) {
-        topCard.classList.add('flipped');
-        launchConfetti();
-      } else {
-        const topFlipped = cards.find(c => c.classList.contains('flipped'));
-        if (topFlipped) {
-          topFlipped.classList.remove('flipped');
-          stack.appendChild(topFlipped); // send to back
-        }
-      }
-    });
-
     // Music
     const music = document.getElementById('birthdayMusic');
     music.volume = 0.4;
   </script>
 </body>
 </html>
+
