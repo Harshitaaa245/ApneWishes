@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Happy Birthday Akmal!</title>
   <style>
     body {
@@ -82,6 +82,7 @@
       font-size: 1.1rem;
       line-height: 1.4;
       text-align: center;
+      white-space: pre-wrap;
     }
 
     canvas {
@@ -100,32 +101,44 @@
   <audio id="birthdayMusic" src="sounds/birthday_song.mp3" autoplay loop></audio>
 
   <script>
-    // Card setup
-    const cardData = {
-      image: 'images/rupanjana.jpg',
-      message: `Happy birthday Akmal bhai 💖\n\nMerese lamba lamba nai likha jata, khush raho, bkcdhi krte raho and I wish u every success that comes your way. Best of luck and have a happy happy birthday, loads of love 🕊`
-    };
+    const cardData = [
+      {
+        image: 'images/rupanjana.jpg',
+        message: `Happy birthday Akmal bhai 💖\n\nMerese lamba lamba nai likha jata, khush raho, bkcdhi krte raho and I wish u every success that comes your way. Best of luck and have a happy happy birthday, loads of love 🕊`
+      },
+      {
+        image: 'images/tamanna.jpg',
+        message: `Happiest birthday Akmal🌻✨\n\nCongratulations for surviving 2 decades ...so here comes the end of your teen life and I would like to give a piece of advice:\n"Arrogance shuts doors, humility opens them" (very chat GPTied)\n\nSeedhi baat no bakwaas: chup chap dhang se mere important texts ka replies kar diya karo 😠\n\nApart from that I really hope you have amazing 20s filled with joy, excitement, thrill, learnings and what not... everything!!!!\n\nI wish you good physical and mental health (which is kind of difficult being in ECE, lately I realised). Baki aur kya... khao peeyo falo fulo mauj masti karo chutiyappa karo....\n\nMera ashirvad sada tumhare sath hai ✋🏼\n\nViraam.`
+      }
+    ];
 
     const stack = document.getElementById('cardStack');
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.style.zIndex = 1;
 
-    const front = document.createElement('div');
-    front.className = 'card-face card-front';
-    const img = document.createElement('img');
-    img.src = cardData.image;
-    front.appendChild(img);
+    function createCard(data, index) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.zIndex = cardData.length - index;
 
-    const back = document.createElement('div');
-    back.className = 'card-face card-back';
-    back.innerText = cardData.message;
+      const front = document.createElement('div');
+      front.className = 'card-face card-front';
+      const img = document.createElement('img');
+      img.src = data.image;
+      front.appendChild(img);
 
-    card.appendChild(front);
-    card.appendChild(back);
-    stack.appendChild(card);
+      const back = document.createElement('div');
+      back.className = 'card-face card-back';
+      back.innerText = data.message;
 
-    // Flip and confetti logic
+      card.appendChild(front);
+      card.appendChild(back);
+      stack.appendChild(card);
+    }
+
+    cardData.forEach((data, i) => createCard(data, i));
+
+    const cards = Array.from(document.querySelectorAll('.card'));
+
+    // Confetti setup
     const confettiCanvas = document.getElementById('confettiCanvas');
     const confetti = confettiCanvas.getContext('2d');
     let particles = [];
@@ -179,19 +192,24 @@
       drawConfetti();
     }
 
+    // Click handling
+    stack.addEventListener('click', () => {
+      const topCard = cards.find(c => !c.classList.contains('flipped'));
+      if (topCard) {
+        topCard.classList.add('flipped');
+        launchConfetti();
+      } else {
+        const topFlipped = cards.find(c => c.classList.contains('flipped'));
+        if (topFlipped) {
+          topFlipped.classList.remove('flipped');
+          stack.appendChild(topFlipped); // send to back
+        }
+      }
+    });
+
     // Music
     const music = document.getElementById('birthdayMusic');
     music.volume = 0.4;
-
-    // Click logic
-    stack.addEventListener('click', () => {
-      if (!card.classList.contains('flipped')) {
-        card.classList.add('flipped');
-        launchConfetti();
-      } else {
-        card.classList.remove('flipped');
-      }
-    });
   </script>
 </body>
 </html>
