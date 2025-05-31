@@ -11,6 +11,7 @@
       align-items: center;
       height: 100vh;
       font-family: 'Comic Sans MS', cursive;
+      overflow: hidden;
     }
 
     .card-stack {
@@ -33,7 +34,7 @@
       padding: 20px;
       text-align: center;
       cursor: pointer;
-      transition: transform 0.5s ease, opacity 0.3s ease;
+      transition: transform 0.6s ease, opacity 0.3s ease;
       backface-visibility: hidden;
     }
 
@@ -41,15 +42,22 @@
       background: #ffe0f0;
     }
 
-    .card.hidden {
-      display: none;
+    .card::after {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 20px;
+      background: rgba(0, 0, 0, 0.05);
+      top: 5px;
+      left: 5px;
+      z-index: -1;
+      filter: blur(2px);
     }
   </style>
 </head>
 <body>
-  <div class="card-stack" id="cardStack">
-    <!-- Cards will be generated here -->
-  </div>
+  <div class="card-stack" id="cardStack"></div>
 
   <script>
     const messages = [
@@ -67,6 +75,12 @@
       const card = document.createElement('div');
       card.className = 'card';
       card.style.zIndex = messages.length - index;
+
+      // Add random but subtle transforms for "stacked" look
+      const offset = index * 2;
+      const rotation = (Math.random() - 0.5) * 4; // -2 to 2 deg
+      card.style.transform = `translateY(${offset * 4}px) rotate(${rotation}deg)`;
+
       card.innerText = "Click to reveal 🎁";
       card.dataset.message = msg;
       stack.appendChild(card);
@@ -80,16 +94,26 @@
     function cycleCard(card) {
       card.classList.remove('revealed');
       card.innerText = "Click to reveal 🎁";
-      const total = document.querySelectorAll('.card').length;
+
+      const cards = Array.from(document.querySelectorAll('.card'));
+      const maxZ = cards.length;
       const currentZ = parseInt(card.style.zIndex);
-      card.style.zIndex = 1; // Send to bottom
+
+      // Send to back
+      card.style.zIndex = 1;
+
       // Bump others up
-      document.querySelectorAll('.card').forEach(c => {
+      cards.forEach(c => {
         let z = parseInt(c.style.zIndex);
         if (c !== card && z < currentZ) {
           c.style.zIndex = z + 1;
         }
       });
+
+      // Re-randomize transform for stack feel
+      const offset = (maxZ - 1) * 2;
+      const rotation = (Math.random() - 0.5) * 4;
+      card.style.transform = `translateY(${offset * 4}px) rotate(${rotation}deg)`;
     }
 
     stack.addEventListener('click', () => {
@@ -104,3 +128,4 @@
   </script>
 </body>
 </html>
+
