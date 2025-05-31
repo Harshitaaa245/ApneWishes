@@ -100,118 +100,158 @@
   <canvas id="confettiCanvas"></canvas>
   <audio id="birthdayMusic" src="sounds/birthday_song.mp3" autoplay loop></audio>
 
-  <script>
-    const cardData = [
-      {
-        image: 'images/rupanjana.jpg',
-        message: `Happy birthday Akmal bhai 💖\n\nMerese lamba lamba nai likha jata, khush raho, bkcdhi krte raho and I wish u every success that comes your way. Best of luck and have a happy happy birthday, loads of love 🕊`
-      },
-      {
-        image: 'images/tamanna.jpg',
-        message: `Happiest birthday Akmal🌻✨\n\nCongratulations for surviving 2 decades ...so here comes the end of your teen life and I would like to give a piece of advice:\n"Arrogance shuts doors, humility opens them" (very chat GPTied)\n\nSeedhi baat no bakwaas: chup chap dhang se mere important texts ka replies kar diya karo 😠\n\nApart from that I really hope you have amazing 20s filled with joy, excitement, thrill, learnings and what not... everything!!!!\n\nI wish you good physical and mental health (which is kind of difficult being in ECE, lately I realised). Baki aur kya... khao peeyo falo fulo mauj masti karo chutiyappa karo....\n\nMera ashirvad sada tumhare sath hai ✋🏼\n\nViraam.`
-      }
-    ];
-
-    const stack = document.getElementById('cardStack');
-
-    function createCard(data, index) {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.style.zIndex = cardData.length - index;
-
-      const front = document.createElement('div');
-      front.className = 'card-face card-front';
-      const img = document.createElement('img');
-      img.src = data.image;
-      front.appendChild(img);
-
-      const back = document.createElement('div');
-      back.className = 'card-face card-back';
-      back.innerText = data.message;
-
-      card.appendChild(front);
-      card.appendChild(back);
-      stack.appendChild(card);
+<script>
+  const cardData = [
+    {
+      image: 'images/rupanjana.jpg',
+      message: `Happy birthday Akmal bhai 💖\n\nMerese lamba lamba nai likha jata, khush raho, bkcdhi krte raho and I wish u every success that comes your way. Best of luck and have a happy happy birthday, loads of love 🕊`
+    },
+    {
+      image: 'images/tamanna.jpg',
+      message: `Happiest birthday Akmal🌻✨\n\nCongratulations for surviving 2 decades ...so here comes the end of your teen life and I would like to give a piece of advice:\n"Arrogance shuts doors, humility opens them" (very chat GPTied)\n\nSeedhi baat no bakwaas: chup chap dhang se mere important texts ka replies kar diya karo 😠\n\nApart from that I really hope you have amazing 20s filled with joy, excitement, thrill, learnings and what not... everything!!!!\n\nI wish you good physical and mental health (which is kind of difficult being in ECE, lately I realised). Baki aur kya... khao peeyo falo fulo mauj masti karo chutiyappa karo....\n\nMera ashirvad sada tumhare sath hai ✋🏼\n\nViraam.`
     }
+  ];
 
-    cardData.forEach((data, i) => createCard(data, i));
+  const stack = document.getElementById('cardStack');
+  let currentIndex = 0;
+  let isFlipped = false;
+  let flipping = false;
 
-    let flipping = false;
+  function createCard(data, index) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.index = index;
+    card.style.zIndex = cardData.length - index;
 
-    stack.addEventListener('click', () => {
-      if (flipping) return;
+    const front = document.createElement('div');
+    front.className = 'card-face card-front';
+    const img = document.createElement('img');
+    img.src = data.image;
+    front.appendChild(img);
 
-      const topCard = stack.lastElementChild;
-      if (!topCard.classList.contains('flipped')) {
+    const back = document.createElement('div');
+    back.className = 'card-face card-back';
+    back.innerText = data.message;
+
+    card.appendChild(front);
+    card.appendChild(back);
+    stack.appendChild(card);
+  }
+
+  cardData.forEach((data, i) => createCard(data, i));
+
+  function getTopCard() {
+    return stack.children[stack.children.length - 1];
+  }
+
+  function flipCard(card) {
+    card.classList.add('flipped');
+    isFlipped = true;
+    launchConfetti();
+  }
+
+  function unflipCard(card) {
+    card.classList.remove('flipped');
+    isFlipped = false;
+  }
+
+  async function handleCardClick() {
+    if (flipping) return;
+    const card = getTopCard();
+    if (!card) return;
+
+    if (!isFlipped) {
+      flipping = true;
+      flipCard(card);
+      flipping = false;
+    } else {
+      const response = await askUser();
+      if (response === 'next') {
         flipping = true;
-        topCard.classList.add('flipped');
-        launchConfetti();
-        setTimeout(() => {
-          topCard.classList.remove('flipped');
-          stack.insertBefore(topCard, stack.firstElementChild);
-          flipping = false;
-        }, 1000);
+        unflipCard(card);
+        stack.insertBefore(card, stack.firstElementChild); // move to bottom
+        flipping = false;
+        isFlipped = false;
+      } else if (response === 'flipBack') {
+        flipping = true;
+        unflipCard(card);
+        flipping = false;
+        isFlipped = false;
       }
+    }
+  }
+
+  function askUser() {
+    return new Promise((resolve) => {
+      const choice = confirm("Would you like to go to the next card?\nPress OK for Next, Cancel to flip back.");
+      resolve(choice ? 'next' : 'flipBack');
     });
+  }
 
-    // Confetti setup
-    const confettiCanvas = document.getElementById('confettiCanvas');
-    const confetti = confettiCanvas.getContext('2d');
-    let particles = [];
+  stack.addEventListener('click', (e) => {
+    const card = getTopCard();
+    if (e.target.closest('.card') !== card) return; // only top card can be clicked
+    handleCardClick();
+  });
 
-    function resizeCanvas() {
-      confettiCanvas.width = window.innerWidth;
-      confettiCanvas.height = window.innerHeight;
-    }
+  // Confetti Setup
+  const confettiCanvas = document.getElementById('confettiCanvas');
+  const confetti = confettiCanvas.getContext('2d');
+  let particles = [];
 
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+  function resizeCanvas() {
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+  }
 
-    function createConfetti() {
-      for (let i = 0; i < 150; i++) {
-        particles.push({
-          x: Math.random() * confettiCanvas.width,
-          y: Math.random() * confettiCanvas.height - confettiCanvas.height,
-          r: Math.random() * 6 + 4,
-          d: Math.random() * 50 + 10,
-          color: `hsl(${Math.random() * 360}, 100%, 70%)`,
-          tilt: Math.random() * 10 - 5
-        });
-      }
-    }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
 
-    function drawConfetti() {
-      confetti.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-      particles.forEach(p => {
-        confetti.beginPath();
-        confetti.fillStyle = p.color;
-        confetti.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
-        confetti.fill();
+  function createConfetti() {
+    for (let i = 0; i < 150; i++) {
+      particles.push({
+        x: Math.random() * confettiCanvas.width,
+        y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+        r: Math.random() * 6 + 4,
+        d: Math.random() * 50 + 10,
+        color: `hsl(${Math.random() * 360}, 100%, 70%)`,
+        tilt: Math.random() * 10 - 5
       });
-      updateConfetti();
     }
+  }
 
-    function updateConfetti() {
-      particles.forEach(p => {
-        p.y += Math.cos(p.d) + 2;
-        p.x += Math.sin(p.d) / 2;
-      });
-      particles = particles.filter(p => p.y < confettiCanvas.height);
-      if (particles.length > 0) {
-        requestAnimationFrame(drawConfetti);
-      }
+  function drawConfetti() {
+    confetti.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    particles.forEach(p => {
+      confetti.beginPath();
+      confetti.fillStyle = p.color;
+      confetti.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
+      confetti.fill();
+    });
+    updateConfetti();
+  }
+
+  function updateConfetti() {
+    particles.forEach(p => {
+      p.y += Math.cos(p.d) + 2;
+      p.x += Math.sin(p.d) / 2;
+    });
+    particles = particles.filter(p => p.y < confettiCanvas.height);
+    if (particles.length > 0) {
+      requestAnimationFrame(drawConfetti);
     }
+  }
 
-    function launchConfetti() {
-      particles = [];
-      createConfetti();
-      drawConfetti();
-    }
+  function launchConfetti() {
+    particles = [];
+    createConfetti();
+    drawConfetti();
+  }
 
-    // Music
-    const music = document.getElementById('birthdayMusic');
-    music.volume = 0.4;
-  </script>
+  // Music
+  const music = document.getElementById('birthdayMusic');
+  music.volume = 0.4;
+</script>
 </body>
 </html>
 
