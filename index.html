@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Akmal's Birthday Cards</title>
+  <style>
+    body {
+      background: #ffeefc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Comic Sans MS', cursive;
+    }
+
+    .card-stack {
+      position: relative;
+      width: 300px;
+      height: 400px;
+    }
+
+    .card {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 20px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      background: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.2rem;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.5s ease, opacity 0.3s ease;
+      backface-visibility: hidden;
+    }
+
+    .card.revealed {
+      background: #ffe0f0;
+    }
+
+    .card.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card-stack" id="cardStack">
+    <!-- Cards will be generated here -->
+  </div>
+
+  <script>
+    const messages = [
+      "Happy Birthday, Akmal! 🎉",
+      "You're amazing and awesome!",
+      "Wishing you lots of cake! 🍰",
+      "You rock, birthday star! 🌟",
+      "May your year be full of smiles 😄"
+    ];
+
+    const stack = document.getElementById('cardStack');
+
+    // Create cards and add to stack
+    messages.forEach((msg, index) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.zIndex = messages.length - index;
+      card.innerText = "Click to reveal 🎁";
+      card.dataset.message = msg;
+      stack.appendChild(card);
+    });
+
+    function getTopCard() {
+      const cards = Array.from(document.querySelectorAll('.card'));
+      return cards.sort((a, b) => b.style.zIndex - a.style.zIndex)[0];
+    }
+
+    function cycleCard(card) {
+      card.classList.remove('revealed');
+      card.innerText = "Click to reveal 🎁";
+      const total = document.querySelectorAll('.card').length;
+      const currentZ = parseInt(card.style.zIndex);
+      card.style.zIndex = 1; // Send to bottom
+      // Bump others up
+      document.querySelectorAll('.card').forEach(c => {
+        let z = parseInt(c.style.zIndex);
+        if (c !== card && z < currentZ) {
+          c.style.zIndex = z + 1;
+        }
+      });
+    }
+
+    stack.addEventListener('click', () => {
+      const topCard = getTopCard();
+      if (!topCard.classList.contains('revealed')) {
+        topCard.classList.add('revealed');
+        topCard.innerText = topCard.dataset.message;
+      } else {
+        cycleCard(topCard);
+      }
+    });
+  </script>
+</body>
+</html>
