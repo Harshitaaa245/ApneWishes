@@ -220,59 +220,70 @@
       });
     }
 
-    async function handleCardClick(card) {
-      if (flipping) return;
+async function handleCardClick(card) {
+  if (flipping) return;
 
-      if (!isFlipped) {
-        flipping = true;
-        flipCard(card);
-        flipping = false;
-      } else {
-        const response = await askUserModal();
-        if (response === 'next') {
-          flipping = true;
-          unflipCard(card);
-          stack.insertBefore(card, stack.firstChild);
-          resetZIndexes();
-          flipping = false;
-          isFlipped = false;
-        } else if (response === 'flipBack') {
-          flipping = true;
-          unflipCard(card);
-          flipping = false;
-          isFlipped = false;
-        }
-      }
-    }
+  if (!isFlipped) {
+    flipping = true;
+    flipCard(card);
+    flipping = false;
+  } else {
+    const response = await askUserModal();
+    if (response === 'next') {
+      flipping = true;
+      unflipCard(card);
 
-    function askUserModal() {
-      return new Promise((resolve) => {
-        const modal = document.getElementById('actionModal');
-        modal.style.display = 'flex';
+      // Move the card to the bottom of the stack
+      stack.removeChild(card);
+      stack.appendChild(card);
 
-        const nextBtn = document.getElementById('nextCardBtn');
-        const flipBackBtn = document.getElementById('flipBackBtn');
-
-        const cleanup = () => {
-          modal.style.display = 'none';
-          nextBtn.removeEventListener('click', onNext);
-          flipBackBtn.removeEventListener('click', onFlipBack);
-        };
-
-        const onNext = () => {
-          cleanup();
-          resolve('next');
-        };
-
-        const onFlipBack = () => {
-          cleanup();
-          resolve('flipBack');
-        };
-
-        nextBtn.addEventListener('click', onNext);
-        flipBackBtn.addEventListener('click', onFlipBack);
+      // Reassign z-indexes: top = highest
+      const cards = Array.from(document.querySelectorAll('.card'));
+      cards.forEach((c, i) => {
+        c.style.zIndex = 1000 - i;
+        c.classList.remove('flipped'); // ensure only current card is unflipped
       });
+
+      flipping = false;
+      isFlipped = false;
+    } else if (response === 'flipBack') {
+      flipping = true;
+      unflipCard(card);
+      flipping = false;
+      isFlipped = false;
     }
+  }
+}
+
+
+function askUserModal() {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('actionModal');
+    modal.style.display = 'flex';
+
+    const nextBtn = document.getElementById('nextCardBtn');
+    const flipBackBtn = document.getElementById('flipBackBtn');
+
+    const cleanup = () => {
+      modal.style.display = 'none';
+      nextBtn.removeEventListener('click', onNext);
+      flipBackBtn.removeEventListener('click', onFlipBack);
+    };
+
+    const onNext = () => {
+      cleanup();
+      resolve('next');
+    };
+
+    const onFlipBack = () => {
+      cleanup();
+      resolve('flipBack');
+    };
+
+    nextBtn.addEventListener('click', onNext);
+    flipBackBtn.addEventListener('click', onFlipBack);
+  });
+}
 
     stack.addEventListener('click', (e) => {
       const card = getTopCard();
